@@ -18,7 +18,7 @@ class MyPath(object):
             return '/path/to/cifar-20/'
 
         elif database == 'stl-10':
-            return '/path/to/stl-10/'
+            return '/bsuhome/hkiesecker/scratch/imageClassification/GOLDEN/stl-10/'
         
         elif database in ['imagenet', 'imagenet_50', 'imagenet_100', 'imagenet_200']:
             return '/path/to/imagenet/'
