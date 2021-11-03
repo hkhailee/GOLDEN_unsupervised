@@ -62,3 +62,8 @@ I want to be able to use SCAN on the unlabled data and with semi supervised trai
 |Tutorial	    |163	        |Onboarding screen                  |
 
 ---------------------------------------------------------------------
+
+ * The next step would be to add my dataset path to utils/mypath.py 
+    - To keep things simple I am going to mimick the current in place datasets but ultimatly delete them in the end on this branch to keep things simple.
+ code added ``` if database == 'rico-20':
+            return '/path/to/rico-20/' ``` 
