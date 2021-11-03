@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Learning to Classify Images without Labels
 
 
@@ -173,3 +174,8 @@ This software is released under a creative commons license which allows for pers
 
 ## Acknoledgements
 This work was supported by Toyota, and was carried out at the TRACE Lab at KU Leuven (Toyota Research on Automated Cars in Europe - Leuven).
+=======
+# GOLDEN_unsupervised
+Customization of SCAN
+work being done in master
+>>>>>>> 9cd76c3bab9e942195410ba134b29d9e198747a6
