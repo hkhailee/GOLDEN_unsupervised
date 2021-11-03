@@ -134,7 +134,7 @@ __label files__ : train_y.bin, test_y.bin
 ImageNet is an image dataset organized according to the WordNet hierarchy. Each meaningful concept in WordNet, possibly described by multiple words or word phrases, is called a "synonym set" or "synset". There are more than 100,000 synsets in WordNet; the majority of them are nouns (80,000+). In ImageNet, we aim to provide on average 1000 images to illustrate each synset. Images of each concept are quality-controlled and human-annotated. In its completion, we hope ImageNet will offer tens of millions of cleanly labeled and sorted images for most of the concepts in the WordNet hierarch. 
 
 
-### thoughts : 
+### thoughts 01: 
 Initially going through these I believed that stl-10 would be the best option since it does include an unlabeled binary and nearly all of the data is unlabeled. However, I think imageNet needs a closer look. With SCAN there is already completed pretext processing, scan and selflabel training that has happened on the imageNet data. This dataset spans 1000 object classes and contains 1,281,167 training images, 50,000 validation images and 100,000 test images of everyday nouns. 
 
 <br />
@@ -177,4 +177,27 @@ Even though the images are still in gray scale this is fine because there is sti
 
 moving on to mimicking imageNet...
 
+# Steps for Utils/common_config.py
+
+* __get_train_dataset__ 
+    - `elif p['train_db_name'] =='rico-20':`
+    - `from data.RICO20 import RICO20`
+    - `'./data/rico_subsets/%s.txt'`
+    - `dataset = RICO20(subset_file=subset_file, split='train', transform=transform)`
+
+* __get_val_dataset__
+    - `elif p['val_db_name'] == 'rico-20':`
+    - `from data.RICO20 import RICO20`
+    - `subset_file = './data/rico_subsets/%s.txt' %(p['val_db_name'])`
+    - `dataset = RICO20(subset_file=subset_file, split='val', transform=transform)`
+
+### thoughts 02: 
+I mentioned before in thoughts 01 that I was going to try to use the already established imageNet trained model. At this point in time I am not seeing a way to do that, so I will start implementing a similar one.
+
+note : p['augmentation_strategy'] == 'ours': exists. also format of imagenet_XXX.txt: 
+n01558993 robin, American robin, Turdus migratorius
+n01601694 water ouzel, dipper
+n01669191 box turtle, box tortoise
+
+# Steps for data/RICO20.py
 
