@@ -38,8 +38,8 @@ To be transparent I am using the RICO (https://interactionmining.org/rico) and e
 
 I want to be able to use SCAN on the unlabled data and with semi supervised training use validation through the pretext processing stage on the labeled enRICO data.
 
-__|Topic name     |Num. UIs       |Description                        |__
-__|---------------|---------------|-----------------------------------|__
+|Topic name     |Num. UIs       |Description                        |
+|---------------|---------------|-----------------------------------|
 |Bare	        |76	            |Largely unused area                |
 |Dialer         |6	            |Number entry                       |
 |Camera	        |8	            |Camera functionality               |
@@ -60,4 +60,5 @@ __|---------------|---------------|-----------------------------------|__
 |Settings	    |90	            |Controls to change app settings    |
 |Terms	        |39	            |Terms and conditions of service    |
 |Tutorial	    |163	        |Onboarding screen                  |
+
 ---------------------------------------------------------------------
