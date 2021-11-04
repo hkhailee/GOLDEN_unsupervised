@@ -137,7 +137,7 @@ def get_train_dataset(p, transform, to_augmented_dataset=False,
         dataset = ImageNet(split='train', transform=transform)
 
     elif p['train_db_name'] == 'rico-20':
-        from data.RICO20 import RICO20
+        from data.rico import RICO20
         subset_file = '/bsuhome/hkiesecker/scratch/imageClassification/GOLDEN/Unsupervised-Classification/data/rico_subsets/%s.txt' %(p['train_db_name'])
         dataset = RICO20(subset_file=subset_file, split='train', transform=transform)
 
@@ -181,7 +181,7 @@ def get_val_dataset(p, transform=None, to_neighbors_dataset=False):
         dataset = ImageNet(split='val', transform=transform)
 
     elif p['val_db_name'] == 'rico-20':
-        from data.RICO20 import RICO20
+        from data.rico import RICO20
         subset_file = '/bsuhome/hkiesecker/scratch/imageClassification/GOLDEN/Unsupervised-Classification/data/rico_subsets/%s.txt' %(p['val_db_name'])
         dataset = RICO20(subset_file=subset_file, split='val', transform=transform)
 

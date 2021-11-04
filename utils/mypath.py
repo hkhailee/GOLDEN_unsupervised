@@ -12,7 +12,7 @@ class MyPath(object):
         assert(database in db_names)
 
         if database == 'rico-20':
-            return '/path/to/rico-20/'
+            return '/bsuhome/hkiesecker/scratch/imageClassification/rico_image/'
 
         elif database == 'stl-10':
             return '/bsuhome/hkiesecker/scratch/imageClassification/GOLDEN/stl-10/'
