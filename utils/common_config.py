@@ -1,5 +1,5 @@
 """
-Authors: Wouter Van Gansbeke, Simon Vandenhende
+Authors: Wouter Van Gansbeke, Simon Vandenhende, Hailee Kiesecker
 Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
 """
 import os
@@ -59,7 +59,9 @@ def get_model(p, pretrain_path=None):
         if 'imagenet' in p['train_db_name']:
             from models.resnet import resnet50
             backbone = resnet50()  
-
+        elif 'rico-20' in p['train_db_name']:
+            from models.resnet import resnet50
+            backbone = resnet50()
         else:
             raise NotImplementedError 
 
