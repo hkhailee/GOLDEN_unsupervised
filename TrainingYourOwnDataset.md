@@ -10,8 +10,6 @@
 
 * execution is done through a remote cluster using slurm
 
-# Real work:
-
 According to the previous questions and answers in the SCAN (https://github.com/wvangansbeke/Unsupervised-Classification) repository issues
 
 ##### steps:
@@ -32,7 +30,109 @@ According to the previous questions and answers in the SCAN (https://github.com/
     * Validation loss is used to select the best model, you can define your own validation set or simply take the final model
     * Lowering weight in the loss will likely help with consistency loss close to entropy and probabilities being very close together.
 
-# Execution:
+## Reading over the paper (https://arxiv.org/pdf/2005.12320.pdf) : 
+
+### {PRETEXT HIGHLIGHTS}
+* In representation learning, a pretext task τ learns in a self-supervised fashion an embedding function Φ_θ - parameterized by a neural network with weights θ - that maps images into feature representations
+
+* certain pretext tasks are based on specific image transformations, causing the learned feature representations to be covariant to the employedtransformation
+
+* pretext task τ to also minimize the distance between images X_i
+and their augmentations T[X_i],
+
+*  the pretext task output is conditioned on the image, forcing Φθ to extract specific information from
+its input
+
+* Φ_θ has a limited capacity, it has to discard information
+from its input that is not predictive of the high-level pretext task
+
+### {MINING HIGHLIGHTS}
+* (instance discrimination) Through representation learning, we train a model Φ_θ on the unlabeled dataset D to solve a pretext task τ
+
+* for every sample X_i ∈ D, we mine its K nearest neighbors in the embedding space Φ_θ
+
+* set N_X_i as the neighboring samples of X_i in the dataset D
+
+* mined nearest neighbors are instances of the same semantic cluster to a degree
+
+* see loss function page 5
+    - the dot product will be maximal when the predictions are one-hot (confident) and assigned to the same cluster (consistent)
+    -  the entropy spreads the predictions uniformly across the clusters C
+
+* approximate the dataset statistics by sampling batches of sufficiently large size
+
+*  randomly augment the samples X_i and their neighbors N_X_i
+<br />
+note not all mined neighbors are classified into the same cluster.samples with highly confident predictions (pmax ≈ 1) tend to be classified to the proper cluster.
+
+### {SELF LABELING HIGHLIGHTS}
+
+* during training confident samples are selected by thresholding
+the probability at the output, i.e. p_max > threshold
+* For every confident sample, a pseudo label is obtained by assigning the sample to its predicted cluster
+* A cross-entropy loss is used to update the weights for the obtained pseudo labels
+* To avoid overfitting, we calculate the cross-entropy loss on strongly augmented
+versions of the confident samples
+*   The self-labeling step allows the network to
+correct itself, as it gradually becomes more certain, adding more samples to the
+mix.
+
+### Experiments 
+* The results are reported as the mean and standard deviation from 10 different runs. Finally, all experiments are performed using the same backbone, augmentations, pretext task and hyperparameters.
+    -  standard ResNet-18 backbone
+    - SimCLR implementation for the instance discrimination task on the smaller datasets
+    -  MoCo on ImageNet (large)
+##### training
+* every image is disentangled as a unique instance independent of the applied transformation
+* transfer the weights, obtained from the pretext task to initiate the
+clustering step
+* clustering step for 100 epochs using batches of size 128
+*  weight on the entropy term is set to λ = 5. A higher weight avoids the premature grouping of samples early on during training
+* After the clustering step, we train for another 200 epochs using the self-labeling procedure with threshold 0.99
+* weighted cross-entropy loss compensates for the imbalance between confident samples across clusters
+* The network weights are updated through Adam with learning rate 10^−4 and weight decay 10^−4
+* during both the clustering and selflabeling steps images are strongly augmented by composing four randomly selected transformations from RandAugment 
+<br />
+keeps mentioning supplimentary materials wish they would reference specifically which ones. (SM starts on page 18)
+
+##### validation criteria
+* During the clustering step, select the best model based on the lowest loss.
+* During the self-labeling step, save the weights of the model when the amount of confident samples plateaus (reach a state of little or no change after a time of activity or progress.)
+* __We follow these practices as we do not have access to a labeled validation set.__
+
+* applying K-means to the pretext features outperforms prior state-of-the-art methods for unsupervised classification based on end-to-end learning schemes
+* Updating the network weights through the SCAN-loss - while augmenting the input images through SimCLR transformations - outperforms K-means
+    -  SCAN-loss avoids the cluster degeneracy issue
+* Applying transformations from RandAgument (RA) to both the samples and their mined neighbors further improves the performance
+* Fine-tuning the network through self-labeling further enhances the quality of the cluster assignments
+    - in order for self-labeling to be successfully applied, a shift in augmentations is required i.e. 
+        - applying transformations from RandAgument
+
+* results not very sensitve to the number of mined neighbors, stays nearly consistent from 5-50 preformance only decreases as we approach 0.
+* The lower performance improvement on CIFAR100-20 can be explained by the ambiguity of the superclasses used to measure the accuracy
+    - there is not exactly one way to group categories like omnivores or carnivores together
+
+##### evaluation 
+*  evaluate the results based on clustering accuracy (ACC), normalized mutual information (NMI) and adjusted rand index (ARI)
+*  did not have to perform any dataset specific fine-tuning
+* a bit quicker than other methods  
+
+### overclustering
+* assumed to have knowledge about the number of ground-truth classes.
+* method predictions were evaluated using a hungarian matching algorithm
+*  conclude that the approach does not require knowledge of the exact number of clusters
+
+##### imageNET
+
+* Training the model with the SCAN-loss again outperforms the application of K-means
+* results are further improved when fine-tuning the model through self-labeling
+* Table 5 compares our method against recent semi-supervised learning approaches when using 1% of the images as labelled data (similar to our enrico?)
+* method outperforms several semi-supervised learning approaches, without using labels. This further demonstrates the strength of our approach
+
+hopping back in
+----------------------------------------------------------------------
+
+# Execution PRETEXT:
 
 To be transparent I am using the RICO (https://interactionmining.org/rico) and enRICO (https://github.com/luileito/enrico) datasets. RICO contains around 66k unlabled images of user interfaces. enRICO is a subset of RICO containting around 1.2k labeled images of the UI's. 
 
@@ -152,7 +252,7 @@ even if our labels do not currently exist in this trained model I believe we can
 __should be tested down the line for comparison__
 
 * I have decided to mimick imageNet
-# Evaluating imageNet for Mimicking (Data and Model)
+## Evaluating imageNet for Mimicking (Data and Model)
 
 Right off the bat in the __getitem__ method I am not seeing any issues. 
 <br />
@@ -167,7 +267,7 @@ __Note : image size is 256 x 256__
 
 Simple enough so far. I am now going to evaluate my own dataset.
 
-# Evaluation of Custom Dataset RICO
+## Evaluation of Custom Dataset RICO
 
 * enRicos images are all different sizes, these are being sampled from the RICO which implies RICO also does not have uniform sizes. This is fine as the code later will be resizeing these images. evaluation done with basic PIL image size command. 
 
@@ -186,7 +286,7 @@ Even though the images are still in gray scale this is fine because there is sti
 
 moving on to mimicking imageNet...
 
-# Steps for Utils/common_config.py
+## Steps for Utils/common_config.py
 
 * __get_model__ elif p['backbone'] == 'resnet50':
     - `elif 'rico-20' in p['train_db_name']:`
@@ -214,7 +314,7 @@ n01558993 robin, American robin, Turdus migratorius <br />
 n01601694 water ouzel, dipper <br />
 n01669191 box turtle, box tortoise <br />
 
-# Steps for data/rico.py
+## Steps for data/rico.py
 
 * two folders val and train 
     - `self.root = os.path.join(root, '%s/' %(split))` 
@@ -225,121 +325,16 @@ n01669191 box turtle, box tortoise <br />
 * ... need to seperate the val set into different folders. while the training one might not use it and thats fine, val does and they use the same data file. 
     - created 20 different class directories with images in them the same verbal name 
 
-end day one work
-----------------------------------------------------------------------
-
-# Reading over the paper (https://arxiv.org/pdf/2005.12320.pdf) : 
-
-### {PRETEXT HIGHLIGHTS}
-* In representation learning, a pretext task τ learns in a self-supervised fashion an embedding function Φ_θ - parameterized by a neural network with weights θ - that maps images into feature representations
-
-* certain pretext tasks are based on specific image transformations, causing the learned feature representations to be covariant to the employedtransformation
-
-* pretext task τ to also minimize the distance between images X_i
-and their augmentations T[X_i],
-
-*  the pretext task output is conditioned on the image, forcing Φθ to extract specific information from
-its input
-
-* Φ_θ has a limited capacity, it has to discard information
-from its input that is not predictive of the high-level pretext task
-
-### {MINING HIGHLIGHTS}
-* (instance discrimination) Through representation learning, we train a model Φ_θ on the unlabeled dataset D to solve a pretext task τ
-
-* for every sample X_i ∈ D, we mine its K nearest neighbors in the embedding space Φ_θ
-
-* set N_X_i as the neighboring samples of X_i in the dataset D
-
-* mined nearest neighbors are instances of the same semantic cluster to a degree
-
-* see loss function page 5
-    - the dot product will be maximal when the predictions are one-hot (confident) and assigned to the same cluster (consistent)
-    -  the entropy spreads the predictions uniformly across the clusters C
-
-* approximate the dataset statistics by sampling batches of sufficiently large size
-
-*  randomly augment the samples X_i and their neighbors N_X_i
-<br />
-note not all mined neighbors are classified into the same cluster.samples with highly confident predictions (pmax ≈ 1) tend to be classified to the proper cluster.
-
-### {SELF LABELING HIGHLIGHTS}
-
-* during training confident samples are selected by thresholding
-the probability at the output, i.e. p_max > threshold
-* For every confident sample, a pseudo label is obtained by assigning the sample to its predicted cluster
-* A cross-entropy loss is used to update the weights for the obtained pseudo labels
-* To avoid overfitting, we calculate the cross-entropy loss on strongly augmented
-versions of the confident samples
-*   The self-labeling step allows the network to
-correct itself, as it gradually becomes more certain, adding more samples to the
-mix.
-
-### Experiments 
-* The results are reported as the mean and standard deviation from 10 different runs. Finally, all experiments are performed using the same backbone, augmentations, pretext task and hyperparameters.
-    -  standard ResNet-18 backbone
-    - SimCLR implementation for the instance discrimination task on the smaller datasets
-    -  MoCo on ImageNet (large)
-##### training
-* every image is disentangled as a unique instance independent of the applied transformation
-* transfer the weights, obtained from the pretext task to initiate the
-clustering step
-* clustering step for 100 epochs using batches of size 128
-*  weight on the entropy term is set to λ = 5. A higher weight avoids the premature grouping of samples early on during training
-* After the clustering step, we train for another 200 epochs using the self-labeling procedure with threshold 0.99
-* weighted cross-entropy loss compensates for the imbalance between confident samples across clusters
-* The network weights are updated through Adam with learning rate 10^−4 and weight decay 10^−4
-* during both the clustering and selflabeling steps images are strongly augmented by composing four randomly selected transformations from RandAugment 
-<br />
-keeps mentioning supplimentary materials wish they would reference specifically which ones. (SM starts on page 18)
-
-##### validation criteria
-* During the clustering step, select the best model based on the lowest loss.
-* During the self-labeling step, save the weights of the model when the amount of confident samples plateaus (reach a state of little or no change after a time of activity or progress.)
-* __We follow these practices as we do not have access to a labeled validation set.__
-
-* applying K-means to the pretext features outperforms prior state-of-the-art methods for unsupervised classification based on end-to-end learning schemes
-* Updating the network weights through the SCAN-loss - while augmenting the input images through SimCLR transformations - outperforms K-means
-    -  SCAN-loss avoids the cluster degeneracy issue
-* Applying transformations from RandAgument (RA) to both the samples and their mined neighbors further improves the performance
-* Fine-tuning the network through self-labeling further enhances the quality of the cluster assignments
-    - in order for self-labeling to be successfully applied, a shift in augmentations is required i.e. 
-        - applying transformations from RandAgument
-
-* results not very sensitve to the number of mined neighbors, stays nearly consistent from 5-50 preformance only decreases as we approach 0.
-* The lower performance improvement on CIFAR100-20 can be explained by the ambiguity of the superclasses used to measure the accuracy
-    - there is not exactly one way to group categories like omnivores or carnivores together
-
-##### evaluation 
-*  evaluate the results based on clustering accuracy (ACC), normalized mutual information (NMI) and adjusted rand index (ARI)
-*  did not have to perform any dataset specific fine-tuning
-* a bit quicker than other methods  
-
-### overclustering
-* assumed to have knowledge about the number of ground-truth classes.
-* method predictions were evaluated using a hungarian matching algorithm
-*  conclude that the approach does not require knowledge of the exact number of clusters
-
-##### imageNET
-
-* Training the model with the SCAN-loss again outperforms the application of K-means
-* results are further improved when fine-tuning the model through self-labeling
-* Table 5 compares our method against recent semi-supervised learning approaches when using 1% of the images as labelled data (similar to our enrico?)
-* method outperforms several semi-supervised learning approaches, without using labels. This further demonstrates the strength of our approach
-
-hopping back in
-----------------------------------------------------------------------
-
-# Revaluation: 
+## Revaluation: 
 After reading through the whole paper again, it has been reinforced that all the methodologies should be done to find best results. 
 
-# Steps for data/rico.py CONT. 
+## Steps for data/rico.py CONT. 
 
 modifying the previous implementation from RICO20 to RICO20_sub. made class RICO20 with no subsets training on train folder in rico_image
 
 * included a subset_file argument to not have to change utils/common_config.py again
 
-# Steps configs/pretext/moco_rico.py
+## Steps configs/pretext/moco_rico.py
 
 Straight copy over- changed db names to rico-20. 
 * batch size modified to 128 for space limitations
@@ -350,12 +345,16 @@ I think thats it for pretext...
 #### HIGHKEY NOTE: since mimicking imagenet to run pretext we will use moco and not simclr
 Additionally. Say you have your images in ./images/train/ for moco.py to see them all the images need to be placed in a subdirectory inside of train. for example ./images/train/1/ with the mypath.py still only pointing to ./images/ and the dataload file still only specifying ./images/train/
 
-# Pretext Results 
+## Pretext Results 
 
 Accuracy of top-50 nearest neighbors on train set is 100.00
 [34mMine the nearest neighbors (Val)(Top-5)[0m
 Fill Memory Bank [0/11]
 Mine the neighbors
 Accuracy of top-5 nearest neighbors on val set is 32.91
- modification
- 
+
+# Implementing Semantic CLusteriing task on custom dataset
+
+
+
+
