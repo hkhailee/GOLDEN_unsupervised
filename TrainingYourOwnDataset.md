@@ -171,9 +171,9 @@ Simple enough so far. I am now going to evaluate my own dataset.
 
 * enRicos images are all different sizes, these are being sampled from the RICO which implies RICO also does not have uniform sizes. This is fine as the code later will be resizeing these images. evaluation done with basic PIL image size command. 
 
-* checking the number of threads and ensuring that conversions inside of imageNet will be accurate on the RICO data (this is done inside evaluate_rico.py)
+* checking the number of channels and ensuring that conversions inside of imageNet will be accurate on the RICO data (this is done inside evaluate_rico.py)
 
-After experimenting it was found that all of the images in the RICO dataset are of different sizes and of different color scales, the methodology presented inside of data/imagenet.py effectivly transforms the given size of an image. however if the image is in gray scale it will not convert it to rgb. Output stats of evaluate_rico.py : 
+After experimenting it was found that all of the images in the RICO dataset are of different sizes and of different color scales, the methodology presented inside of data/imagenet.py effectivly transforms the given size of an image. however if the image is in gray scale it will not convert it to true rgb, however it will continue to have the apropriate 3 channels. Output stats of evaluate_rico.py : 
 
 - starting number of gray images 20
 - starting number of color images 2644
@@ -187,6 +187,12 @@ Even though the images are still in gray scale this is fine because there is sti
 moving on to mimicking imageNet...
 
 # Steps for Utils/common_config.py
+
+* __get_model__ elif p['backbone'] == 'resnet50':
+    - `elif 'rico-20' in p['train_db_name']:`
+    - `from models.resnet import resnet50`
+    - `backbone = resnet50()`
+
 
 * __get_train_dataset__ 
     - `elif p['train_db_name'] =='rico-20':`
@@ -211,10 +217,7 @@ n01669191 box turtle, box tortoise <br />
 # Steps for data/rico.py
 
 * two folders val and train 
-    - `self.root = os.path.join(root, '%s' %(split))` 
-
-* Since I do not have folders with sep. classes 
-    - `subdirs, class_names = [], []` becomes `class_names = []`
+    - `self.root = os.path.join(root, '%s/' %(split))` 
 * added class information to ./data/rico_subsets/rico-20.txt
 * for gathering the files sorted I removed the subdir loop, only called the train directory itself to get all of the files. (lines 29-34 in data/rico.py)
 
@@ -222,7 +225,7 @@ n01669191 box turtle, box tortoise <br />
 * ... need to seperate the val set into different folders. while the training one might not use it and thats fine, val does and they use the same data file. 
     - created 20 different class directories with images in them the same verbal name 
 
-At this point I am confused on why imagenet is calling classes for the training. are they using that? wouldnt that make this supervised? confusion. taking a break for the day.
+end day one work
 ----------------------------------------------------------------------
 
 # Reading over the paper (https://arxiv.org/pdf/2005.12320.pdf) : 
@@ -260,7 +263,7 @@ from its input that is not predictive of the high-level pretext task
 <br />
 note not all mined neighbors are classified into the same cluster.samples with highly confident predictions (pmax ≈ 1) tend to be classified to the proper cluster.
 
-### {SELF LABELING TASK?}
+### {SELF LABELING HIGHLIGHTS}
 
 * during training confident samples are selected by thresholding
 the probability at the output, i.e. p_max > threshold
@@ -328,7 +331,7 @@ hopping back in
 ----------------------------------------------------------------------
 
 # Revaluation: 
-After reading through the whole paper again, I am very sad to say that the classes assignments do not actually need to be done however it is fine to keep what we have because it wont impact anything. It has been reinforced that all the methodologies should be done to find best results. 
+After reading through the whole paper again, it has been reinforced that all the methodologies should be done to find best results. 
 
 # Steps for data/rico.py CONT. 
 
@@ -340,6 +343,19 @@ modifying the previous implementation from RICO20 to RICO20_sub. made class RICO
 
 Straight copy over- changed db names to rico-20. 
 * batch size modified to 128 for space limitations
+* changed num classes to 20
 
 I think thats it for pretext...
 
+#### HIGHKEY NOTE: since mimicking imagenet to run pretext we will use moco and not simclr
+Additionally. Say you have your images in ./images/train/ for moco.py to see them all the images need to be placed in a subdirectory inside of train. for example ./images/train/1/ with the mypath.py still only pointing to ./images/ and the dataload file still only specifying ./images/train/
+
+# Pretext Results 
+
+Accuracy of top-50 nearest neighbors on train set is 100.00
+[34mMine the nearest neighbors (Val)(Top-5)[0m
+Fill Memory Bank [0/11]
+Mine the neighbors
+Accuracy of top-5 nearest neighbors on val set is 32.91
+ modification
+ 
