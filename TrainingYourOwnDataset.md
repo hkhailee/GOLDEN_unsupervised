@@ -355,6 +355,21 @@ Accuracy of top-5 nearest neighbors on val set is 32.91
 
 # Implementing Semantic CLusteriing task on custom dataset
 
+Starting off I think the first thing to do is create a configs/scan for rico-20
+
+## Steps for configs/scan/scan_rico-20.yml 
+
+* straight copied over scan_imagenet_50.yml 
+    - modified to rico-20 dataset
+    - changed num_classes to 20 
+    - kept num neighbors at 50 (since it doesnt really affect)
+    - changed batch size to 128 and epochs to 300 (proportionate)
+
+No modification needed to scan.py. During scan traing number of epochs remained at 100 even with the modified environment file.
+
+sucessfully ran scan.py
+
+## Steps for configs/selflabel/selflabel_rico-20.yml 
 
 
 
