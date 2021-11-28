@@ -371,5 +371,12 @@ sucessfully ran scan.py
 
 ## Steps for configs/selflabel/selflabel_rico-20.yml 
 
+* straight copied over selflabel_imagenet_50.yml
+    - changed epchs to 75
+    - batch size 128
+    - dataset to rico-20
+
+
+
 
 
